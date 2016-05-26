@@ -94,7 +94,7 @@ auto operator+(const uintN_t &a, const uintN_t &b) {
 	tmp.ptr = new char[tmp.length];
 	tmp.ptr[0] = 0;
 	if (a.length > b.length) {
-		memcpy(tmp.ptr + 1, a.ptr, a.length);
+		memcpy(tmp.ptr + 1, a.ptr, a.length * sizeof(char));
 		for (auto i = 0; i < b.length; ++i) {
 			tmp.ptr[tmp.length - i - 1] += b.ptr[b.length - i - 1];
 			if (tmp.ptr[tmp.length - i - 1] > 9) {
@@ -104,7 +104,7 @@ auto operator+(const uintN_t &a, const uintN_t &b) {
 		}
 	}
 	else {
-		memcpy(tmp.ptr + 1, b.ptr, b.length);
+		memcpy(tmp.ptr + 1, b.ptr, b.length * sizeof(char));
 		for (auto i = 0; i < a.length; ++i) {
 			tmp.ptr[tmp.length - i - 1] += a.ptr[a.length - i - 1];
 			if (tmp.ptr[tmp.length - i - 1] > 9) {
