@@ -60,7 +60,7 @@ public:
 		delete[] ptr;
 		ptr = nullptr;
 	}
-	auto operator=(uintN_t &&obj) {
+	auto operator=(uintN_t &&obj)->uintN_t & {
 		if (this != &obj) {
 			length = obj.length;
 			delete[] ptr;
@@ -69,7 +69,7 @@ public:
 		}
 		return *this;
 	}
-	auto operator=(const uintN_t &obj) {
+	auto operator=(const uintN_t &obj)->uintN_t & {
 		if (this != &obj) {
 			length = obj.length;
 			delete[] ptr;
