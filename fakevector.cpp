@@ -12,7 +12,7 @@ struct node {
 
 template<typename T>
 class fakevector final {
-public:
+private:
 	uint64_t length = 0;
 	node<T> *ptr = nullptr;
 public:
