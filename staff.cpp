@@ -1,80 +1,107 @@
 #include <iostream>
-#include <functional>
-#include <array>
 #include <cstdint>
 #include <cstdlib>
 
-constexpr auto VERSION = (1ull << 63) + 1; //v1.1
+constexpr auto VERSION = (1ull << 63) + 2; //v1.2
 
-class staff final {
-private:
+class staff {
+protected:
 	static uint64_t count;
-	uint64_t *_data = new uint64_t[3]{ count, 0, 0 };
-	std::function<void(uint64_t)> _salary_calc = [this](uint64_t val) {
-		constexpr auto c = 5000ull;
-		constexpr auto coeff = 10000ull;
-		if (!val)
-			_data[2] = coeff * _data[1] + c;
-		else
-			_data[2] = val;
-	};
+	uint64_t *_data = nullptr;
+	staff() = default;
 public:
-	staff(uint64_t val1 = 0, uint64_t val2 = 0) {
-		_data[1] = val1;
-		_salary_calc(val2);
-		++count;
-	}
 	staff(const staff &) = delete;
-	staff(staff &&obj) {
-		*this = static_cast<staff &&>(obj);
-	}
+	staff(staff &&) = delete;
 	~staff() {
 		delete[] _data;
 		_data = nullptr;
 	}
 	auto operator=(const staff &)->staff & = delete;
-	auto operator=(staff &&obj)->staff & {
-		if (this != &obj) {
-			delete[] _data;
-			_data = obj._data;
-			obj._data = nullptr;
-		}
-		return *this;
+	auto operator=(staff &&)->staff & = delete;
+	auto set_salary(uint64_t val) {
+		_data[2] = val;
 	}
-	friend auto operator<<(std::ostream &out, const staff &obj)->std::ostream &;
-	std::function<void(uint64_t)> &set_salary = _salary_calc;
-	auto get_salary() {
+	auto get_salary() const {
 		return _data[2];
 	}
 	auto set_SN(uint64_t val) {
 		_data[0] = val;
 	}
-	auto get_SN() {
+	auto get_SN() const {
 		return _data[0];
 	}
 	auto set_rank(uint64_t val) {
 		_data[1] = val;
-		_salary_calc(0);
 	}
-	auto get_rank() {
+	auto get_rank() const {
 		return _data[1];
 	}
+};
+
+class parttime final :public staff {
+public:
+	parttime(uint64_t val, ...) {
+		_data = new uint64_t[5]{ count, val, 0, *(&val + 1), *(&val + 2) };
+		_data[2] = _data[3] * _data[4];
+		++count;
+	}
+	parttime(const parttime &) = delete;
+	parttime(parttime &&) = delete;
+	~parttime() = default;
+	auto operator=(const parttime &)->parttime & = delete;
+	auto operator=(parttime &&obj)->parttime & = delete;
+};
+
+class fulltime final :public staff {
+public:
+	fulltime(uint64_t val, ...) {
+		_data = new uint64_t[4]{ count, val, 0, *(&val + 1) };
+		_data[2] = 2000 + 50 * _data[3];
+		++count;
+	}
+	fulltime(const fulltime &) = delete;
+	fulltime(fulltime &&) = delete;
+	~fulltime() = default;
+	auto operator=(const fulltime &)->fulltime & = delete;
+	auto operator=(fulltime &&obj)->fulltime & = delete;
+};
+
+class sales final :public staff {
+public:
+	sales(uint64_t val, ...) {
+		_data = new uint64_t[4]{ count, val, 0, *(&val + 1) };
+		_data[2] = 1000 + static_cast<uint64_t>(0.01 * _data[3]);
+		++count;
+	}
+	sales(const sales &) = delete;
+	sales(sales &&) = delete;
+	~sales() = default;
+	auto operator=(const sales &)->sales & = delete;
+	auto operator=(sales &&obj)->sales & = delete;
 };
 
 uint64_t staff::count = 0;
 
 static inline auto operator<<(std::ostream &out, const staff &obj)->std::ostream & {
-	out << "SN: " << obj._data[0] << std::endl;
-	out << "rank: " << obj._data[1] << std::endl;
-	out << "salary(USD): " << obj._data[2];
+	out << "SN: " << obj.get_SN() << std::endl;
+	out << "rank: " << obj.get_rank() << std::endl;
+	out << "salary(USD): " << obj.get_salary();
 	return out;
 }
 
 auto main()->void {
-	std::array<staff, 20> _test_array;
+	parttime array1[] = { { 3, 2000, 100 },{ 1, 100, 130 },{ 5, 80000, 20 } };
+	fulltime array2[] = { { 6, 10 },{ 4, 5 },{ 0, 2 } };
+	sales array3[] = { { 2, 100000 },{ 3, 5000000 },{ 4, 800000000 } };
 	auto _rank_statistics = [&](uint64_t rank) {
 		auto i = 0ull;
-		for (auto &x : _test_array)
+		for (auto &x : array1)
+			if (x.get_rank() > rank)
+				++i;
+		for (auto &x : array2)
+			if (x.get_rank() > rank)
+				++i;
+		for (auto &x : array3)
 			if (x.get_rank() > rank)
 				++i;
 		if (!i)
@@ -84,16 +111,14 @@ auto main()->void {
 		else
 			std::cout << i << " members have ranks superior to rank" << rank << std::endl;
 	};
-	_test_array[0].set_rank(6);
-	_test_array[4].set_rank(3);
-	_test_array[7].set_rank(4);
-	_test_array[11].set_rank(1);
-	_test_array[13].set_rank(5);
-	for (auto &x : _test_array)
+	for (auto &x : array1)
+		std::cout << x << std::endl << std::endl;
+	for (auto &x : array2)
+		std::cout << x << std::endl << std::endl;
+	for (auto &x : array3)
 		std::cout << x << std::endl << std::endl;
 	_rank_statistics(6);
 	_rank_statistics(5);
 	_rank_statistics(3);
 	system("pause");
 }
-
