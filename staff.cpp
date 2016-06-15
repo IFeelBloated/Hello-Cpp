@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <cstdlib>
 
-constexpr auto VERSION = (1ull << 63) + 2; //v1.2
+constexpr auto VERSION = (1ull << 63) + 3; //v1.3
 
 class staff {
 protected:
@@ -36,13 +36,14 @@ public:
 	auto get_rank() const {
 		return _data[1];
 	}
+	virtual uint64_t calc(uint64_t, ...) const = 0;
 };
 
 class parttime final :public staff {
 public:
 	parttime(uint64_t val, ...) {
 		_data = new uint64_t[5]{ count, val, 0, *(&val + 1), *(&val + 2) };
-		_data[2] = _data[3] * _data[4];
+		_data[2] = calc(_data[3], _data[4]);
 		++count;
 	}
 	parttime(const parttime &) = delete;
@@ -50,13 +51,16 @@ public:
 	~parttime() = default;
 	auto operator=(const parttime &)->parttime & = delete;
 	auto operator=(parttime &&obj)->parttime & = delete;
+	uint64_t calc(uint64_t val, ...) const override {
+		return val * *(&val + 1);
+	}
 };
 
 class fulltime final :public staff {
 public:
 	fulltime(uint64_t val, ...) {
 		_data = new uint64_t[4]{ count, val, 0, *(&val + 1) };
-		_data[2] = 2000 + 50 * _data[3];
+		_data[2] = calc(_data[3]);
 		++count;
 	}
 	fulltime(const fulltime &) = delete;
@@ -64,13 +68,16 @@ public:
 	~fulltime() = default;
 	auto operator=(const fulltime &)->fulltime & = delete;
 	auto operator=(fulltime &&obj)->fulltime & = delete;
+	uint64_t calc(uint64_t val, ...) const override {
+		return 2000 + 50 * val;
+	}
 };
 
 class sales final :public staff {
 public:
 	sales(uint64_t val, ...) {
 		_data = new uint64_t[4]{ count, val, 0, *(&val + 1) };
-		_data[2] = 1000 + static_cast<uint64_t>(0.01 * _data[3]);
+		_data[2] = calc(_data[3]);
 		++count;
 	}
 	sales(const sales &) = delete;
@@ -78,6 +85,9 @@ public:
 	~sales() = default;
 	auto operator=(const sales &)->sales & = delete;
 	auto operator=(sales &&obj)->sales & = delete;
+	uint64_t calc(uint64_t val, ...) const override {
+		return 1000 + static_cast<uint64_t>(0.01 * val);
+	}
 };
 
 uint64_t staff::count = 0;
@@ -120,5 +130,9 @@ auto main()->void {
 	_rank_statistics(6);
 	_rank_statistics(5);
 	_rank_statistics(3);
+	staff *poly[3] = { &array1[0], &array2[0], &array3[0] };
+	std::cout << std::endl << "Polymorphism: parttime, fulltime, sales:" << std::endl;
+	for (auto x : poly)
+		std::cout << x->calc(100000, 200) << std::endl;
 	system("pause");
 }
