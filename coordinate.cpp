@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 
-constexpr auto VERSION = (1ull << 63) + 0; //v1.0
+constexpr auto VERSION = (1ull << 63) + 1; //v1.1
 constexpr auto PI = 3.1415926535897932384626433832795;
 
 class coordinate {
@@ -38,10 +38,11 @@ public:
 		}
 		return *this;
 	}
-	virtual auto calc()->double {
+	virtual double calc() const {
 		return 0.;
 	}
 	friend auto operator<<(std::ostream &, const coordinate &)->std::ostream &;
+	friend auto operator<<(std::ostream &, const coordinate *)->std::ostream &;
 protected:
 	double *data = nullptr;
 };
@@ -77,7 +78,7 @@ public:
 		}
 		return *this;
 	}
-	auto calc()->double override {
+	double calc() const override {
 		if (data != nullptr)
 			return PI * data[2] * data[2];
 		return 0.;
@@ -115,7 +116,7 @@ public:
 		}
 		return *this;
 	}
-	auto calc()->double override {
+	double calc() const override {
 		if (data != nullptr)
 			return data[2] * data[3];
 		return 0.;
@@ -128,18 +129,42 @@ auto operator<<(std::ostream &out, const coordinate &obj)->std::ostream & {
 	else if (typeid(obj) == typeid(coordinate))
 		out << "coordinates: (" << obj.data[0] << ", " << obj.data[1] << ")" << std::endl;
 	else if (typeid(obj) == typeid(circle))
-		out << "shape: circle" << std::endl << "area: " << const_cast<coordinate &>(obj).calc() << std::endl;
+		out << "shape: circle" << std::endl << "area: " << obj.calc() << std::endl;
 	else if (typeid(obj) == typeid(rectangle))
-		out << "shape: rectangle" << std::endl << "area: " << const_cast<coordinate &>(obj).calc() << std::endl;
+		out << "shape: rectangle" << std::endl << "area: " << obj.calc() << std::endl;
 	else
 		out << "wtf?" << std::endl;
 	return out;
+}
+
+auto operator<<(std::ostream &out, const coordinate *obj)->std::ostream & {
+	if (obj->data == nullptr)
+		out << "wtf?" << std::endl;
+	else if (typeid(*obj) == typeid(coordinate))
+		out << "coordinates: (" << obj->data[0] << ", " << obj->data[1] << ")" << std::endl;
+	else if (typeid(*obj) == typeid(circle))
+		out << "shape: circle" << std::endl << "area: " << obj->calc() << std::endl;
+	else if (typeid(*obj) == typeid(rectangle))
+		out << "shape: rectangle" << std::endl << "area: " << obj->calc() << std::endl;
+	else
+		out << "wtf?" << std::endl;
+	return out;
+}
+
+auto accumulator(coordinate **addr, uint64_t num) {
+	auto sum = 0.;
+	for (auto i = 0ull; i < num; ++i)
+		sum += addr[i]->calc();
+	std::cout << "total area of " << num << " graphic(s): " << sum << std::endl;
 }
 
 auto main()->void {
 	coordinate p = { 2.3, 4.2 };
 	circle s1 = { 0., 0., 1.234 };
 	rectangle s2 = { 0., 0., 6.4, 4.7 };
-	std::cout << p << std::endl << s1 << std::endl << s2 << std::endl;
+	coordinate *graphics[] = { &p, &s1, &s2 };
+	for (auto x : graphics)
+		std::cout << x << std::endl;
+	accumulator(graphics, sizeof(graphics) / sizeof(coordinate *));
 	system("pause");
 }
