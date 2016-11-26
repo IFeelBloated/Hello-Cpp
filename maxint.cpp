@@ -42,12 +42,12 @@ auto operator<(const element &a, const element &b) {
 	else if (a.length == b.length)
 		return false;
 	else {
-		auto max_length = std::max(a.length, b.length);
-		auto max_string = (a.length > b.length) ? a.data : b.data;
-		auto ptr = max_string + 1;
-		while (ptr[0] == max_string[0] && ptr < max_string + max_length)
+		auto min_length = std::min(a.length, b.length);
+		auto min_string = (a.length > b.length) ? b.data : a.data;
+		auto ptr = min_string;
+		while (ptr[0] == min_string[0] && ptr < min_string + min_length - 1)
 			++ptr;
-		if (ptr[0] > max_string[0])
+		if (ptr[0] > min_string[0])
 			return a.length > b.length;
 		else
 			return b.length > a.length;
@@ -129,5 +129,16 @@ auto Align(element *arr, const uint64_t length) {
 }
 
 auto main()->int {
+	auto count = 0;
+	std::cin >> count;
+	auto arr = new element[count];
+	for (auto i = 0; i < count; ++i)
+		std::cin >> arr[i];
+	Align(arr, count);
+	std::sort(arr, arr + count);
+	for (auto i = count - 1; i >= 0; --i)
+		std::cout << arr[i];
+	std::cout << std::endl;
+	delete[] arr;
 	system("pause");
 }
