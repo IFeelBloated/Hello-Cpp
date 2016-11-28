@@ -105,12 +105,12 @@ auto Align(element *arr, const uint64_t length) {
 			auto ptr = buffer + obj.length;
 			auto extra_length = element::max_length - obj.length;
 			while (extra_length / obj.length) {
-				std::memcpy(ptr, buffer, obj.length);
+				std::memcpy(ptr, buffer, obj.length * sizeof(char));
 				extra_length -= obj.length;
 				ptr += obj.length;
 			}
 			if (extra_length)
-				std::memcpy(ptr, buffer, extra_length);
+				std::memcpy(ptr, buffer, extra_length * sizeof(char));
 		};
 		auto StringToInteger = [=](element &obj) {
 			obj.aligned_data = 0;
