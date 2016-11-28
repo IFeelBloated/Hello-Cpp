@@ -17,7 +17,7 @@ struct element final {
 		length = obj.length;
 		obj.data = nullptr;
 	}
-	auto operator=(element &&obj)->element & {
+	auto &operator=(element &&obj) {
 		if (this != &obj) {
 			delete[] data;
 			data = obj.data;
@@ -28,7 +28,7 @@ struct element final {
 		return *this;
 	}
 	element(const element &) = delete;
-	auto operator=(const element &)->element & = delete;
+	auto &operator=(const element &) = delete;
 	~element() {
 		delete[] data;
 	}
@@ -54,7 +54,7 @@ auto operator<(const element &a, const element &b) {
 	}
 }
 
-auto operator>>(std::istream &in, element &obj)->std::istream & {
+auto &operator>>(std::istream &in, element &obj) {
 	auto var = 0ull;
 	auto ConvertToData = [&]() {
 		auto GetLength = [&, var]() mutable {
@@ -80,9 +80,9 @@ auto operator>>(std::istream &in, element &obj)->std::istream & {
 	return in;
 }
 
-auto operator<<(std::ostream &out, const element &obj)->std::ostream & {
+auto &operator<<(std::ostream &out, const element &obj) {
 	auto buffer = reinterpret_cast<char *>(alloca((obj.length + 1) * sizeof(char)));
-	auto StringToBuffer = [&]() {
+	auto StringToBuffer = [=, &obj]() {
 		std::memcpy(buffer, obj.data, obj.length * sizeof(char));
 		for (auto i = 0; i < obj.length; ++i)
 			buffer[i] += '0';
@@ -93,14 +93,14 @@ auto operator<<(std::ostream &out, const element &obj)->std::ostream & {
 	return out;
 }
 
-auto Align(element *arr, const uint64_t length) {
+auto Align = [](auto arr, auto length) {
 	auto GetMaxLength = [=]() {
 		for (auto i = 0; i < length; ++i)
 			element::max_length = std::max(element::max_length, arr[i].length);
 	};
 	auto GetAlignedData = [=]() {
 		auto buffer = reinterpret_cast<char *>(alloca(element::max_length * sizeof(char)));
-		auto DuplicateDigits = [=](const element &obj) {
+		auto DuplicateDigits = [=](auto &obj) {
 			std::memcpy(buffer, obj.data, obj.length * sizeof(char));
 			auto ptr = buffer + obj.length;
 			auto extra_length = element::max_length - obj.length;
@@ -112,7 +112,7 @@ auto Align(element *arr, const uint64_t length) {
 			if (extra_length)
 				std::memcpy(ptr, buffer, extra_length * sizeof(char));
 		};
-		auto StringToInteger = [=](element &obj) {
+		auto StringToInteger = [=](auto &obj) {
 			obj.aligned_data = 0;
 			for (auto i = 0; i < element::max_length; ++i) {
 				obj.aligned_data *= 10;
@@ -126,7 +126,7 @@ auto Align(element *arr, const uint64_t length) {
 	};
 	GetMaxLength();
 	GetAlignedData();
-}
+};
 
 auto main()->int {
 	auto count = 0;
