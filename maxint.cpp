@@ -34,7 +34,7 @@ struct element final {
 	}
 };
 
-uint64_t element::max_length = 0;
+decltype(element::max_length) element::max_length = 0;
 
 auto operator<(const element &a, const element &b) {
 	if (a.aligned_data != b.aligned_data)
