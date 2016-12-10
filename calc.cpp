@@ -64,7 +64,7 @@ struct node final {
 		auto IsSigned = [=]() {
 			return string[0] == '+' || string[0] == '-';
 		};
-		auto OperatorToNode = [&] {
+		auto OperatorToNode = [&]() {
 			value = string[0];
 			IsOperator = true;
 			switch (value) {
@@ -80,7 +80,7 @@ struct node final {
 		};
 		auto IntegerToNode = [&]() {
 			auto negative = false;
-			auto StringToInteger = [&] {
+			auto StringToInteger = [&]() {
 				auto GetLength = [=]() {
 					auto i = 0ull;
 					auto ptr = string;
